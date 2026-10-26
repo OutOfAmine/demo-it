@@ -11,7 +11,8 @@ No FFmpeg, no API keys, no screen recording. Type `/demo-it`.
 1. **Pick the source.** Latest commit, today's commits, the commits you choose, or a feature by name. Say it in the prompt ("demo my last commit") or pick from one question.
 2. **Understands the feature like a user would.** It reads the diff and the components it touches, then works out the promise, the moment the feature shows itself, and what it replaced.
 3. **Storyboards a 30-50 s film** from your product's real strings, layout and colours. No source code or commit hashes appear on screen; it explains the feature, not the implementation.
-4. **Builds and publishes.** A React + Framer Motion player turns the storyboard into one page that plays itself. Space pauses, arrows skip, **Voice** narrates.
+4. **Shows you the storyboard first.** Every scene, caption and screen state as plain text, with any sample data called out (screens that depend on live data are shown once loaded, filled from your fixtures or seeds). Fix anything before it builds.
+5. **Builds and publishes.** A React + Framer Motion player turns the storyboard into one page that plays itself. Space pauses, arrows skip, **Voice** narrates.
 
 ### Scenes
 

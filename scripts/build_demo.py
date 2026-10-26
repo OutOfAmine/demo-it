@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Turn a demo storyboard (JSON) into one self-contained, auto-playing HTML page.
 
-Usage: build_demo.py demo.json [-o demo.html] [--artifact]
+Usage: build_demo.py demo.json [-o demo.html] [--artifact] [--outline]
 
 Checks the storyboard first and prints warnings for things that make a demo
 drag or break (too many scenes, long captions, huge code blocks, bad selectors).
 Exits non-zero only on errors that would stop the page from playing.
 """
 import argparse
+import html as html_lib
 import json
 import pathlib
 import re
@@ -87,6 +88,38 @@ def check(demo):
     return errors, warns
 
 
+def visible(markup, limit=140):
+    """The text a viewer reads on a screen: tags and <style> dropped, whitespace collapsed."""
+    text = re.sub(r"(?is)<style.*?</style>|<[^>]+>", " ", markup or "")
+    text = " ".join(html_lib.unescape(text).split())
+    return text if len(text) <= limit else text[: limit - 1] + "…"
+
+
+def outline(demo):
+    """A plain-text storyboard for the user to approve before the film is built."""
+    out = [f"{demo.get('title', 'Demo')} ({len(demo['scenes'])} scenes)"]
+    for i, s in enumerate(demo["scenes"], 1):
+        t = s.get("type")
+        head = s.get("title") or " / ".join(s.get("lines") or []) or s.get("label") or ""
+        out.append(f"\n{i}. {t}: {head.replace('*', '')}".rstrip(": "))
+        if s.get("say"):
+            out.append(f"   says: {s['say']}")
+        if t == "screen":
+            for k, st in enumerate(s.get("states") or [], 1):
+                bits = [st.get("note") or st.get("do") or "", f"shows: {visible(st['html'])}" if st.get("html") else ""]
+                out.append(f"   state {k}: " + " | ".join(b for b in bits if b))
+        elif t == "beforeafter":
+            for side in ("before", "after"):
+                v = s.get(side) or {}
+                out.append(f"   {side}: " + (visible(v.get("html")) or ", ".join(v.get("items") or [])))
+        elif t in ("highlights", "journey"):
+            for it in s.get("items") or s.get("nodes") or []:
+                out.append(f"   - {it.get('title') or it.get('label')}")
+        elif t == "number":
+            out.append(f"   {s.get('from', '')} → {s.get('to')}{s.get('suffix', '')}")
+    return "\n".join(out)
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -94,6 +127,7 @@ def main():
     ap.add_argument("demo")
     ap.add_argument("-o", "--out")
     ap.add_argument("--artifact", action="store_true", help="emit a page body for claude.ai Artifacts (no doctype/html/head/body)")
+    ap.add_argument("--outline", action="store_true", help="print the storyboard as plain text for review; build nothing")
     a = ap.parse_args()
     src = pathlib.Path(a.demo)
     demo = json.loads(src.read_text(encoding="utf-8"))
@@ -104,6 +138,9 @@ def main():
         print("ERROR:", e)
     if errors:
         sys.exit(1)
+    if a.outline:
+        print(outline(demo))
+        return
     # "</" must not appear raw inside the inline <script>
     data = json.dumps(demo, ensure_ascii=False).replace("</", "<\\/")
     title = demo.get("title", "Demo").replace("<", "&lt;")

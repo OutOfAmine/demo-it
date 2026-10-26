@@ -45,6 +45,8 @@ The diff tells you what changed; the film is about what a person can now do. Rea
 - **The before**: what used to happen (the bug, the extra steps, the missing option). That's the struck word in the hook or the before side of the wipe.
 - **The look**: real strings, labels, layout and colours (CSS variables, Tailwind config, theme files, the logo's colour) so screens are recognisable.
 
+- **The data**: if the screen shows live data or depends on user state (several API responses, a logged-in user, a full cart), each screen state is a snapshot of what the user sees once it has loaded, not the requests behind it. Pick the state worth showing (loaded, empty, error, the one the feature changes) and fill it with values from the project's fixtures, seed files, test mocks or types, in that order, so the numbers and names look like real ones. Note which values are samples; the preview in step 4 lists them.
+
 Never invent behaviour, numbers or UI the product doesn't have. When the change has nothing a user sees (performance, refactor, infra), film the effect a user feels — faster load, no stutter, fewer steps — with `number`, `beforeafter` lists and `highlights`, and keep it honest. If the change is too thin for a film (typo, version bump), say so and offer a 3-scene version instead of padding.
 
 ## 3. Storyboard
@@ -64,7 +66,19 @@ Captions (`say`) are what a presenter would say over the footage: short, concret
 
 Save files outside the user's repo so the demo never ends up in a commit: the session's scratchpad/temp directory if you have one, otherwise the OS temp dir. Name them with a short slug of the title (`round-pick.json`).
 
-## 4. Build and check
+## 4. Preview the storyboard
+
+Before building, show the user the storyboard so they can correct it while it is still cheap:
+
+```bash
+python SKILL_DIR/scripts/build_demo.py <dir>/round-pick.json --outline
+```
+
+It prints each scene with its caption and, for screens, the text visible in every state. Paste it in a code block and add one line listing the sample data you filled in (from step 2), then ask one question: **Build it** or **Change something**. Apply changes to the JSON and show the outline again until they say build.
+
+Skip the preview when the user asked for no questions ("just make it", "surprise me") or is iterating on a film they already approved.
+
+## 5. Build and check
 
 ```bash
 python SKILL_DIR/scripts/build_demo.py <dir>/round-pick.json -o <dir>/round-pick.html
@@ -72,7 +86,7 @@ python SKILL_DIR/scripts/build_demo.py <dir>/round-pick.json -o <dir>/round-pick
 
 Fix every `ERROR`; treat warnings as strong suggestions (a missing target means the camera and cursor go nowhere). If you have a browser tool, serve the folder over http, let it play, check the console, and look at the screen scene once — the usual bugs are screen markup that overflows its frame and targets that don't exist. The page loads React and Framer Motion from public CDNs, so it needs a connection.
 
-## 5. Publish (the "one click" part)
+## 6. Publish (the "one click" part)
 
 - **Artifact tool available** (claude.ai / Claude desktop): rebuild with `--artifact` (the host adds its own doctype/head/body, so the builder leaves them out) and publish that HTML as an Artifact (icon `play`, a one-sentence description of the feature). If your environment asks you to load a design skill first, do so; the player already follows the page contract (title, explicit colours, dark look by design, mobile layout, CDN allowlist), so it shouldn't need changes. Give the user the link.
 - **No Artifact tool**: open the HTML in the default browser (`start`, `open` or `xdg-open`) and give the path.
