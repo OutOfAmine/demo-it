@@ -1,0 +1,69 @@
+{
+  "title": "Round pick sticks",
+  "product": "Your Friends Hate You",
+  "meta": "private rooms · Oct 19",
+  "theme": { "accent": "#e2483a", "accent2": "#ffcf3a" },
+  "lang": "en-US",
+  "scenes": [
+    {
+      "type": "hook",
+      "kicker": "New in private rooms",
+      "lines": ["Pick *one* round.", "Get ~three~ *one*."],
+      "say": "Hosts could choose one round, and the lobby quietly put it back to three. Not anymore."
+    },
+    {
+      "type": "screen",
+      "title": "Pick it once. *It stays.*",
+      "device": "browser",
+      "url": "your-friends-hate-you · room 7KQ2",
+      "height": 440,
+      "bg": "#2a3a1a",
+      "css": ".p{margin:22px auto;max-width:560px;background:#fff6e2;border:3px solid #6b3f1d;border-radius:16px;padding:20px 22px;color:#3d220d;font:15px Nunito,system-ui,sans-serif;position:relative}.eb{font:800 11px system-ui;letter-spacing:.12em;color:#b97c43}.eb i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#8fdc3c;margin-right:6px}h2{margin:6px 0 14px;font:28px 'Lilita One','Arial Black',sans-serif}.rs{display:flex;align-items:center;flex-wrap:wrap;gap:10px;background:#e8dfc8;padding:10px 12px;border-radius:10px}.rs label{font-weight:900;font-size:13px}.sel{background:#fff6e2;border:2px solid #6b3f1d;border-radius:8px;font:16px 'Lilita One','Arial Black',sans-serif;padding:8px 30px 8px 12px;min-width:120px;position:relative}.sel:after{content:'▾';position:absolute;right:10px}.rs small{color:#75664c;font-size:11px;flex:1}.dd{position:absolute;left:150px;top:150px;background:#fff;border:2px solid #6b3f1d;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.25);overflow:hidden;z-index:2}.dd div{padding:7px 14px;font:15px 'Lilita One','Arial Black',sans-serif}.dd .h{background:#ffdc70}.steps{display:inline-flex;gap:6px;margin-top:12px}.steps span{padding:7px 10px;border-radius:8px;background:#efe5cd;border:1px solid #c9b58c;font:13px 'Lilita One','Arial Black',sans-serif}.steps .cur{background:#ffdc70;border-color:#a57525}.ok{color:#2f6a14}.foot{display:flex;gap:8px;margin-top:16px}.wood{padding:9px 14px;border-radius:9px;background:#d29a5c;border:2px solid #6b3f1d;color:#3d220d;font:14px 'Lilita One','Arial Black',sans-serif}.go{background:#e2483a;color:#fff}",
+      "states": [
+        { "html": "<div class='p'><div class='eb'><i></i>PRIVATE ROOM · 00:41</div><h2>Gather your enemies</h2><div class='rs'><label>Rounds in this match</label><div class='sel' id='sel'>3 rounds</div><small>Choose 1–10 rounds. Everyone must be ready to start.</small></div><div class='steps'><span>R1</span><span>R2</span><span>R3</span></div><div class='foot'><span class='wood'>I’M NOT READY</span><span class='wood go'>START GAME</span></div></div>", "target": "#sel", "do": "click", "zoom": 1.6, "hold": 500 },
+        { "html": "<div class='p'><div class='eb'><i></i>PRIVATE ROOM · 00:42</div><h2>Gather your enemies</h2><div class='rs'><label>Rounds in this match</label><div class='sel'>3 rounds</div><small>Choose 1–10 rounds. Everyone must be ready to start.</small></div><div class='steps'><span>R1</span><span>R2</span><span>R3</span></div><div class='foot'><span class='wood'>I’M NOT READY</span><span class='wood go'>START GAME</span></div><div class='dd'><div class='h' id='one'>1 round</div><div>2 rounds</div><div>3 rounds</div><div>4 rounds</div></div></div>", "target": "#one", "do": "click", "zoom": 1.9, "hold": 500 },
+        { "html": "<div class='p'><div class='eb'><i></i>PRIVATE ROOM · 00:42</div><h2>Gather your enemies</h2><div class='rs'><label>Rounds in this match</label><div class='sel ok' id='sel'>1 round</div><small>Choose 1–10 rounds. Everyone must be ready to start.</small></div><div class='steps' id='steps'><span class='cur'>R1</span></div><div class='foot'><span class='wood'>I’M NOT READY</span><span class='wood go'>START GAME</span></div></div>", "target": "#sel", "do": "spot", "zoom": 1.5, "note": "Still 1, frame after frame", "hold": 1500 },
+        { "target": "#steps", "do": "spot", "zoom": 1, "note": "One round, then the final ranking", "hold": 1700 }
+      ],
+      "say": "Open the round picker, choose one round, and it stays one, every frame, for everyone in the room."
+    },
+    {
+      "type": "beforeafter",
+      "title": "Same lobby, *no surprises*",
+      "height": 360,
+      "bg": "#2a3a1a",
+      "css": ".p{margin:30px auto;max-width:520px;background:#fff6e2;border:3px solid #6b3f1d;border-radius:16px;padding:20px 22px;color:#3d220d;font:15px Nunito,system-ui,sans-serif}h2{margin:0 0 14px;font:26px 'Lilita One','Arial Black',sans-serif}.rs{display:flex;align-items:center;gap:10px;background:#e8dfc8;padding:10px 12px;border-radius:10px}.rs label{font-weight:900;font-size:13px}.sel{background:#fff6e2;border:2px solid #6b3f1d;border-radius:8px;font:16px 'Lilita One','Arial Black',sans-serif;padding:8px 14px}.bad{color:#e2483a}.ok{color:#2f6a14}.steps{display:inline-flex;gap:6px;margin-top:12px}.steps span{padding:7px 10px;border-radius:8px;background:#efe5cd;border:1px solid #c9b58c;font:13px 'Lilita One','Arial Black',sans-serif}.steps .cur{background:#ffdc70;border-color:#a57525}.msg{margin-top:12px;font-weight:800;font-size:13px}",
+      "before": { "label": "Before", "html": "<div class='p'><h2>You picked 1 round</h2><div class='rs'><label>Rounds in this match</label><div class='sel bad'>3 rounds</div></div><div class='steps'><span>R1</span><span>R2</span><span>R3</span></div><div class='msg bad'>…and the lobby put it back.</div></div>" },
+      "after": { "label": "Now", "html": "<div class='p'><h2>You picked 1 round</h2><div class='rs'><label>Rounds in this match</label><div class='sel ok'>1 round</div></div><div class='steps'><span class='cur'>R1</span></div><div class='msg ok'>…and that’s what you play.</div></div>" },
+      "say": "Before, a render frame could overwrite your pick. Now the lobby only updates when the setting really changes."
+    },
+    {
+      "type": "highlights",
+      "title": "What hosts get",
+      "items": [
+        { "icon": "🎛️", "title": "Any match length", "body": "Choose 1 to 10 rounds before you start." },
+        { "icon": "👑", "title": "Host decides", "body": "Guests see the choice but can’t change it." },
+        { "icon": "🔁", "title": "Clean rematches", "body": "A one-round rematch starts with fresh scores." }
+      ],
+      "say": "Pick any length from one to ten. Only the host decides, and rematches start fresh."
+    },
+    {
+      "type": "journey",
+      "title": "From lobby to *final ranking*",
+      "nodes": [
+        { "icon": "🎛️", "label": "Pick 1 round", "sub": "Host, in the lobby" },
+        { "icon": "✅", "label": "Everyone ready", "sub": "Start unlocks" },
+        { "icon": "🎮", "label": "Play round 1" },
+        { "icon": "🏆", "label": "Final ranking", "sub": "No round 2" }
+      ],
+      "say": "Pick one round, everyone gets ready, play it, and go straight to the final ranking."
+    },
+    {
+      "type": "end",
+      "kicker": "Live on main",
+      "title": "Your rounds, your rules.",
+      "tagline": "Private rooms in *Your Friends Hate You*",
+      "say": "Your rounds, your rules. Open a private room and go make your friends hate you."
+    }
+  ]
+}
