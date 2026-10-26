@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__DEMO_TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* One cinematic dark look on purpose: a launch film, not a document. */
+:root{
+  color-scheme:dark;
+  --bg:#07070b; --bg2:#101018; --panel:#14141d; --ink:#f4f4f7; --ink2:#a9a9b8; --ink3:#666676; --line:#262633;
+  --accent:#7c6cff; --accent2:color-mix(in oklab,var(--accent) 45%,#ff4fa3);
+  --soft:color-mix(in srgb,var(--accent) 18%,transparent);
+  --ok:#4ade80; --bad:#f87171;
+  --fit:max(180px,calc(100dvh - 330px));
+  --display:'Bricolage Grotesque','Geist',system-ui,sans-serif;
+  --font:'Geist',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- ambient ---------- */
+.aurora{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.blob{position:absolute;width:90vmax;height:90vmax;border-radius:50%;opacity:.32;will-change:transform}
+.blob.a{background:radial-gradient(closest-side,var(--accent),transparent);left:-30vmax;top:-35vmax}
+.blob.b{background:radial-gradient(closest-side,var(--accent2),transparent);right:-35vmax;bottom:-40vmax;opacity:.22}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- shell ---------- */
+#root{position:fixed;inset:0;z-index:2}
+.app{position:absolute;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.bars{display:flex;gap:4px;padding:14px 16px 0}
+.bar{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;cursor:pointer}
+.bar i{display:block;height:100%;width:0;background:var(--ink)}
+.top{display:flex;align-items:center;gap:10px;padding:10px 16px 0;font:12px var(--mono);color:var(--ink3);letter-spacing:.04em}
+.top .sp{flex:1}
+.top span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px 16px;perspective:1400px;overflow:hidden}
+.scene{width:100%;max-width:1040px;max-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,2.6vh,28px)}
+.caption{min-height:3.3em;padding:0 16px 6px;display:flex;justify-content:center}
+.caption p{max-width:820px;text-align:center;font-size:clamp(16px,2.1vw,21px);line-height:1.45;font-weight:500}
+.caption .cw{color:var(--ink);opacity:.16;transition:opacity .22s}
+.caption .cw.on{opacity:1}
+.ctrls{display:flex;align-items:center;justify-content:center;gap:4px;padding:4px 16px 14px}
+.ctrls button{height:36px;min-width:36px;padding:0 10px;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2);display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.ctrls button:hover{background:rgba(255,255,255,.06);color:var(--ink)}
+.ctrls button[aria-pressed="true"]{color:var(--accent)}
+.ctrls svg{width:18px;height:18px}
+.count{font:12px var(--mono);color:var(--ink3);min-width:46px;text-align:center}
+.badge{position:fixed;z-index:3;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));font:11px var(--mono);color:var(--ink3);text-decoration:none}
+.ov{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(7,7,11,.55);backdrop-filter:blur(8px)}
+.ov button{display:flex;align-items:center;gap:12px;padding:16px 26px;border-radius:16px;background:var(--accent);color:#fff;font-weight:800;font-size:17px}
+.ov svg{width:22px;height:22px}
+.fail{padding:24px;color:var(--ink2);text-align:center;font-size:15px}
+@media (max-width:640px){.badge,.hide-sm{display:none!important}}
+
+/* ---------- type ---------- */
+.kicker{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;background:var(--soft);color:var(--accent);font:600 12.5px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.head{display:flex;flex-direction:column;align-items:center;gap:12px}
+.h2{font:800 clamp(26px,4.3vw,48px)/1.06 var(--display);letter-spacing:-.03em;text-align:center;text-wrap:balance}
+.acc{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.body{font-size:clamp(16px,2.2vw,22px);line-height:1.5;color:var(--ink2);text-align:center;max-width:720px;text-wrap:balance}
+@media (max-height:600px){.scene .kicker{display:none}.h2{font-size:clamp(20px,3.4vw,30px)}.scene{gap:10px}}
+
+/* ---------- hook ---------- */
+.hook{display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.4vh,14px)}
+.hl{font:800 clamp(30px,6vw,76px)/1.04 var(--display);letter-spacing:-.04em;text-align:center;text-wrap:balance}
+.hl.sm{font-size:clamp(22px,3.6vw,44px);color:var(--ink2);font-weight:700}
+.wd{display:inline-block;position:relative;white-space:pre}
+.sline{position:absolute;left:-2%;right:-2%;top:54%;height:.09em;border-radius:1em;background:var(--bad);transform-origin:left center}
+
+/* ---------- device / screen ---------- */
+.device{width:100%;border-radius:16px;background:var(--panel);border:1px solid var(--line);overflow:hidden;box-shadow:0 40px 90px -30px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.03) inset;transform-style:preserve-3d}
+.device.phone{max-width:340px;border-radius:38px;padding:10px;background:#0c0c12;border:1px solid #2a2a36}
+.device.phone .dev-bar{display:none}
+.device.phone .viewport{border-radius:30px}
+.dev-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg2);font:12px var(--mono);color:var(--ink2)}
+.dots{display:flex;gap:6px;flex:none}.dots i{width:10px;height:10px;border-radius:50%;background:#2c2c3a}
+.url{flex:1;min-width:0;background:rgba(255,255,255,.04);border-radius:7px;padding:4px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.viewport{position:relative;overflow:hidden}
+.cam{position:absolute;inset:0}
+.layer{position:absolute;inset:0}
+.shadow{position:absolute;inset:0}
+.layer img{width:100%;height:100%;object-fit:contain;display:block}
+.cursor{position:absolute;left:0;top:0;width:28px;height:28px;margin:-3px 0 0 -4px;z-index:6;pointer-events:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+.ripple{position:absolute;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;border:2.5px solid var(--accent);z-index:5;pointer-events:none}
+.spot{position:absolute;z-index:4;border-radius:12px;box-shadow:0 0 0 3px var(--accent),0 0 0 9999px rgba(5,5,10,.5);pointer-events:none}
+.note{position:absolute;z-index:7;max-width:260px;padding:9px 13px;border-radius:12px;background:#fff;color:#111;font:600 13.5px/1.35 var(--font);box-shadow:0 14px 30px -10px rgba(0,0,0,.6)}
+
+/* ---------- before / after ---------- */
+.ba{position:relative;width:100%;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 40px 90px -30px rgba(0,0,0,.8);background:var(--panel)}
+.ba-pane{position:absolute;inset:0}
+.ba-lab{position:absolute;top:12px;z-index:3;padding:5px 10px;border-radius:8px;font:600 11.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;background:rgba(0,0,0,.6);color:#fff}
+.ba-lab.l{left:12px}.ba-lab.r{right:12px;background:var(--accent)}
+.ba-div{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;z-index:4;background:#fff;box-shadow:0 0 24px var(--accent)}
+.ba-list{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:clamp(18px,4vw,48px);background:var(--panel)}
+.after .ba-list{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 22%,var(--panel)),var(--panel))}
+.ba-list div{display:flex;gap:12px;align-items:baseline;font:600 clamp(16px,2.3vw,24px)/1.3 var(--display)}
+.ba-list b{flex:none;width:1.2em;color:var(--bad)}
+.after .ba-list b{color:var(--ok)}
+
+/* ---------- highlights ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;width:100%}
+.card{padding:22px 20px;border-radius:18px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015));border:1px solid var(--line);min-width:0}
+.card .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--soft);margin-bottom:14px}
+.card h3{font:700 clamp(17px,2vw,21px)/1.2 var(--display);letter-spacing:-.01em}
+.card p{margin-top:6px;color:var(--ink2);font-size:14.5px;line-height:1.45}
+
+/* ---------- journey ---------- */
+.jr{position:relative;display:flex;justify-content:space-between;gap:12px;width:100%;padding-top:4px}
+.jr-track{position:absolute;left:8%;right:8%;top:31px;height:3px;border-radius:3px;background:var(--line)}
+.jr-fill{position:absolute;inset:0;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform-origin:left center}
+.jn{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;min-width:0}
+.jn .dot{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:24px;background:var(--panel);border:2px solid var(--line)}
+.jn.on .dot{border-color:var(--accent);box-shadow:0 0 0 6px var(--soft),0 0 40px -6px var(--accent)}
+.jn .lb{font:700 clamp(15px,1.8vw,19px)/1.2 var(--display)}
+.jn .sb{font-size:13px;color:var(--ink2);line-height:1.4}
+@media (max-width:640px){.jr{flex-direction:column;gap:16px}.jr-track{left:28px;right:auto;top:8%;bottom:8%;width:3px;height:auto}.jr-fill{transform-origin:center top}.jn{flex-direction:row;text-align:left}.jn .dot{flex:none}}
+
+/* ---------- number ---------- */
+.num{display:flex;flex-direction:column;align-items:center;gap:6px}
+.num .big{font:800 clamp(80px,17vw,200px)/.95 var(--display);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.num .lab{font:600 clamp(18px,2.6vw,28px) var(--display);color:var(--ink2);text-align:center}
+.num .was{font:500 15px var(--mono);color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--bad)}
+
+/* ---------- terminal ---------- */
+.term{width:100%;max-width:860px;border-radius:14px;overflow:hidden;border:1px solid #2b2b38;box-shadow:0 40px 90px -30px rgba(0,0,0,.8)}
+.term .dev-bar{background:#15151d}
+.term-b{background:#0a0a0f;font:clamp(12px,1.5vw,15px)/1.7 var(--mono);padding:16px 18px;height:min(var(--fit),420px);overflow:hidden;white-space:pre-wrap;word-break:break-word;color:#e7e7ea}
+.term-b .pr{color:var(--accent)}.term-b .ok{color:var(--ok)}.term-b .err{color:var(--bad)}.term-b .dim{color:#777786}.term-b .warn{color:#fbbf24}
+.caret{display:inline-block;width:.55em;height:1.1em;vertical-align:-.18em;background:var(--accent);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- end ---------- */
+.end{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px}
+.end .t{font:800 clamp(36px,7vw,92px)/1 var(--display);letter-spacing:-.045em;text-align:center}
+.end .t span{display:inline-block;white-space:pre}
+.end .tag{font-size:clamp(16px,2.2vw,22px);color:var(--ink2);text-align:center}
+.cta{padding:13px 22px;border-radius:14px;background:var(--ink);color:var(--bg);font:600 15px var(--mono)}
+.spark{position:absolute;left:50%;top:45%;width:8px;height:8px;margin:-4px;border-radius:50%;background:var(--accent);pointer-events:none}
+.spark:nth-child(3n){background:var(--accent2)}.spark:nth-child(5n){background:#fff}
+</style>
+</head>
+<body>
+<div class="aurora"><div class="blob a" id="blobA"></div><div class="blob b" id="blobB"></div></div>
+<div class="grain"></div>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/framer-motion@11.11.17/dist/framer-motion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+const DEMO = /*__DEMO_DATA__*/null;
+
+(() => {
+const root = document.getElementById('root');
+if (!window.React || !window.ReactDOM || !window.Motion || !window.htm) { root.innerHTML = '<p class="fail">This demo needs an internet connection to load its animation libraries.</p>'; return; }
+if (!DEMO || !Array.isArray(DEMO.scenes) || !DEMO.scenes.length) { root.innerHTML = '<p class="fail">No demo data.</p>'; return; }
+
+const { useState, useEffect, useLayoutEffect, useRef } = React;
+const { motion, AnimatePresence, animate, useMotionValue, useTransform, MotionConfig } = Motion;
+const html = htm.bind(React.createElement);
+const ABORT = Symbol('abort');
+const scenes = DEMO.scenes;
+const T = DEMO.theme || {};
+if (T.accent) document.documentElement.style.setProperty('--accent', T.accent);
+if (T.accent2) document.documentElement.style.setProperty('--accent2', T.accent2);
+document.title = DEMO.title || document.title;
+
+const spring = { type: 'spring', stiffness: 170, damping: 22 };
+const soft = { type: 'spring', stiffness: 80, damping: 18 };
+
+// slow drifting light behind everything
+animate('#blobA', { x: ['0vw', '18vw', '4vw'], y: ['0vh', '12vh', '-6vh'] }, { duration: 22, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' });
+animate('#blobB', { x: ['0vw', '-16vw', '-4vw'], y: ['0vh', '-10vh', '6vh'] }, { duration: 26, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' });
+
+/* ---------- clock: pausable, speed-aware, cancellable ---------- */
+const clock = { speed: 1, paused: false, gen: 0, t: 0, est: 1 };
+function wait(ms, gen, track) {
+  return new Promise((res, rej) => {
+    let left = ms, last = performance.now();
+    const tick = now => {
+      if (gen !== clock.gen) return rej(ABORT);
+      const dt = Math.min(now - last, 100); last = now;
+      if (!clock.paused) { left -= dt * clock.speed; if (track) clock.t += dt * clock.speed; }
+      left <= 0 ? res() : requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+/* ---------- text helpers: *accent*  ~struck~ ---------- */
+// punctuation right after a marked word ("*one*.") stays glued to it as `tail`
+function tokens(s) {
+  return [...String(s || '').matchAll(/([*~])([^*~]+)\1([^\s*~]*)|\S+/g)].map(m =>
+    m[1] ? { text: m[2], acc: m[1] === '*', strike: m[1] === '~', tail: m[3] } : { text: m[0], tail: '' });
+}
+const rich = s => tokens(s).map((t, i) => html`<span key=${i}><span className=${t.acc ? 'acc' : ''} style=${t.strike ? { textDecoration: 'line-through', opacity: .5 } : null}>${t.text}</span>${t.tail}${' '}</span>`);
+const plain = s => String(s || '').replace(/[*~]/g, '');
+
+/* ---------- how long each step of a scene lasts (ms, before speed) ---------- */
+const PLAN = {
+  hook: sc => (sc.lines || []).map(l => 650 + tokens(l).length * 110 + (l.includes('~') ? 900 : 0)),
+  text: sc => [1100 + plain(sc.body).split(/\s+/).length * 70],
+  screen: sc => (sc.states || []).map((s, k) => (k === 0 ? 900 : 0) + (k > 0 && (s.html != null || s.image) ? 420 : 0) + (s.target || s.at ? 950 : 250) + (s.do === 'click' ? 250 : 0) + (s.do === 'type' ? (s.text || '').length * 60 + 200 : 0) + (s.hold ?? 1100)),
+  beforeafter: sc => [1700, 2000],
+  highlights: sc => [500, ...(sc.items || []).map(() => 700)],
+  journey: sc => [500, ...(sc.nodes || []).map(() => 850)],
+  number: sc => sc.from != null ? [1300, 1700] : [1700],
+  terminal: sc => [700, ...(sc.steps || []).map(s => (s.cmd || '').length * 36 + 450 + (s.out || []).length * 200 + 500)],
+  end: sc => [2600],
+};
+
+/* ---------- shared pieces ---------- */
+function Head({ sc }) {
+  if (!sc.kicker && !sc.title) return null;
+  return html`<div className="head">
+    ${sc.kicker && html`<${motion.div} className="kicker" initial=${{ opacity: 0, y: 10 }} animate=${{ opacity: 1, y: 0 }} transition=${spring}>${sc.kicker}<//>`}
+    ${sc.title && html`<${motion.div} className="h2" initial=${{ opacity: 0, y: 22, filter: 'blur(10px)' }} animate=${{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition=${{ ...spring, delay: .06 }}>${rich(sc.title)}<//>`}
+  </div>`;
+}
+
+// a project screen, isolated in a shadow root so its CSS can't touch the player
+const SHADOW_BASE = ':host{all:initial;display:block;position:absolute;inset:0;overflow:hidden;font-family:system-ui,sans-serif;color:#111}*{box-sizing:border-box}';
+function Shadow({ markup, css, bg, onRoot }) {
+  const ref = useRef();
+  useLayoutEffect(() => {
+    const el = ref.current; const r = el.shadowRoot || el.attachShadow({ mode: 'open' });
+    r.innerHTML = `<style>${SHADOW_BASE}${css || ''}</style>${markup || ''}`;
+    onRoot && onRoot(r);
+  }, [markup, css]);
+  return html`<div ref=${ref} className="shadow" style=${{ background: bg || '#fff' }}></div>`;
+}
+
+const Cursor = () => html`<svg viewBox="0 0 24 24" width="28" height="28"><path d="M4 2l16 9-7 1.6L9.5 20z" fill="#111" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round"/></svg>`;
+
+/* ---------- scenes ---------- */
+function Hook({ sc, step }) {
+  return html`<div className="hook">
+    ${sc.kicker && html`<${motion.div} className="kicker" initial=${{ opacity: 0, scale: .8 }} animate=${{ opacity: 1, scale: 1 }} transition=${spring}>${sc.kicker}<//>`}
+    ${(sc.lines || []).map((line, i) => i <= step && html`<div key=${i} className=${'hl' + (i > 0 && sc.lines.length > 2 && i === sc.lines.length - 1 && sc.small_last ? ' sm' : '')}>
+      ${tokens(line).map((t, j) => html`<${Word} key=${j} t=${t} d=${j * 0.08} />`)}
+    </div>`)}
+  </div>`;
+}
+function Word({ t, d }) {
+  return html`<${motion.span} className="wd"
+      initial=${{ opacity: 0, y: '0.55em', rotate: 5, filter: 'blur(12px)' }}
+      animate=${{ opacity: t.strike ? [0, 1, 1, .4] : 1, y: 0, rotate: 0, filter: 'blur(0px)' }}
+      transition=${{ ...spring, delay: d, opacity: t.strike ? { duration: 1.6, times: [0, .2, .7, 1], delay: d } : { delay: d, duration: .3 } }}>
+    <span className=${t.acc ? 'acc' : ''} style=${{ position: 'relative' }}>${t.text}${t.strike && html`<${motion.i} className="sline" initial=${{ scaleX: 0 }} animate=${{ scaleX: 1 }} transition=${{ delay: d + .6, duration: .45, ease: [.7, 0, .3, 1] }} />`}</span>${t.tail}
+  <//><span> </span>`;
+}
+
+function Text({ sc }) {
+  return html`<${Head} sc=${sc} />${sc.body && html`<${motion.p} className="body" initial=${{ opacity: 0, y: 14 }} animate=${{ opacity: 1, y: 0 }} transition=${{ ...spring, delay: .25 }}>${rich(sc.body)}<//>`}`;
+}
+
+function Screen({ sc, step }) {
+  const states = sc.states || [];
+  const k = Math.max(0, Math.min(step, states.length - 1));
+  let si = 0; for (let i = 0; i <= k; i++) if (states[i].html != null || states[i].image) si = i;
+  const frame = useRef(), rootRef = useRef(null);
+  const x = useMotionValue(0), y = useMotionValue(0), s = useMotionValue(1);
+  const cx = useMotionValue(0), cy = useMotionValue(0), cs = useMotionValue(1);
+  const [curOn, setCurOn] = useState(false);
+  const [fx, setFx] = useState({});
+  useLayoutEffect(() => { const F = frame.current; cx.set(F.clientWidth * .74); cy.set(F.clientHeight * .86); }, []);
+  useEffect(() => {
+    const st = states[k]; if (!st) return;
+    let alive = true; const timers = [];
+    const later = (ms, f) => timers.push(setTimeout(() => alive && f(), ms));
+    setFx({});
+    later((k === 0 ? 800 : 0) + (k > 0 && (st.html != null || st.image) ? 400 : 0), () => {
+      const F = frame.current; if (!F) return;
+      const W = F.clientWidth, H = F.clientHeight;
+      let box = null;
+      if (st.at) { const [px, py, pw = 8, ph = 8] = st.at; box = { l: px / 100 * W - pw / 200 * W, t: py / 100 * H - ph / 200 * H, w: pw / 100 * W, h: ph / 100 * H }; }
+      else if (st.target && rootRef.current) {
+        const el = rootRef.current.querySelector(st.target);
+        if (el) { const r = el.getBoundingClientRect(), fr = F.getBoundingClientRect(), S = s.get(); box = { l: (r.left - fr.left - x.get()) / S, t: (r.top - fr.top - y.get()) / S, w: r.width / S, h: r.height / S }; }
+      }
+      // camera: zoom so the target sits in the middle, without showing past the screen's edges
+      const Z = st.zoom === true ? 1.7 : (+st.zoom || 1);
+      let X = 0, Y = 0;
+      if (box && Z > 1) {
+        X = Math.min(0, Math.max(W - Z * W, W / 2 - Z * (box.l + box.w / 2)));
+        Y = Math.min(0, Math.max(H - Z * H, H / 2 - Z * (box.t + box.h / 2)));
+      }
+      animate(s, Z, soft); animate(x, X, soft); animate(y, Y, soft);
+      if (!box) return;
+      const tb = { l: X + Z * box.l, t: Y + Z * box.t, w: Z * box.w, h: Z * box.h };
+      const px = tb.l + Math.min(tb.w * .55, tb.w - 6), py = tb.t + tb.h * .62;
+      setCurOn(true);
+      animate(cx, px, { type: 'spring', stiffness: 75, damping: 17 }); animate(cy, py, { type: 'spring', stiffness: 75, damping: 17 });
+      later(900, () => {
+        const el = st.target && rootRef.current?.querySelector(st.target);
+        if (st.do === 'click' || st.do === 'type') {
+          animate(cs, [1, .78, 1], { duration: .3 });
+          setFx(f => ({ ...f, ripple: { x: px, y: py, id: Math.random() } }));
+          if (st.do === 'click' && el) el.classList.add(st.toggle || 'is-active');
+        }
+        if (st.do === 'type' && st.text && el) {
+          const isInput = 'value' in el;
+          [...st.text].forEach((ch, i) => later(150 + i * 58, () => { isInput ? el.value += ch : el.textContent += ch; }));
+        }
+        if (st.do === 'spot') setFx(f => ({ ...f, spot: tb }));
+        if (st.note) {
+          const nx = Math.max(8, Math.min(W - 272, tb.l));
+          const below = tb.t + tb.h + 14;
+          setFx(f => ({ ...f, note: { text: st.note, x: nx, y: below + 64 < H ? below : Math.max(8, tb.t - 62) } }));
+        }
+      });
+    });
+    return () => { alive = false; timers.forEach(clearTimeout); };
+  }, [k]);
+  const scr = states[si] || {};
+  const dev = sc.device || 'browser';
+  const height = `min(${+(sc.height || (dev === 'phone' ? 560 : 460))}px, var(--fit))`;
+  return html`<${Head} sc=${sc} />
+    <${motion.div} className=${'device ' + dev}
+        initial=${{ opacity: 0, rotateX: 26, y: 110, scale: .9 }} animate=${{ opacity: 1, rotateX: 0, y: 0, scale: 1 }} transition=${{ type: 'spring', stiffness: 70, damping: 15 }}>
+      <div className="dev-bar"><span className="dots"><i></i><i></i><i></i></span><span className="url">${sc.url || ''}</span></div>
+      <div className="viewport" ref=${frame} style=${{ height, background: sc.bg || '#fff' }}>
+        <${motion.div} className="cam" style=${{ x, y, scale: s, transformOrigin: '0 0' }}>
+          <${AnimatePresence} initial=${false}>
+            <${motion.div} key=${si} className="layer" initial=${{ opacity: 0, scale: .985 }} animate=${{ opacity: 1, scale: 1 }} exit=${{ opacity: 0 }} transition=${{ duration: .35 }}>
+              ${scr.image ? html`<img alt="" src=${scr.image} />` : html`<${Shadow} markup=${scr.html} css=${sc.css} bg=${sc.bg} onRoot=${r => { rootRef.current = r; }} />`}
+            <//>
+          <//>
+        <//>
+        ${fx.spot && html`<${motion.div} className="spot" initial=${{ opacity: 0, scale: 1.25 }} animate=${{ opacity: 1, scale: 1 }} transition=${spring}
+            style=${{ left: fx.spot.l - 8, top: fx.spot.t - 8, width: fx.spot.w + 16, height: fx.spot.h + 16 }} />`}
+        ${fx.ripple && html`<${motion.div} key=${fx.ripple.id} className="ripple" style=${{ left: fx.ripple.x, top: fx.ripple.y }}
+            initial=${{ scale: .2, opacity: 1 }} animate=${{ scale: 1.9, opacity: 0 }} transition=${{ duration: .65 }} />`}
+        <${motion.div} className="cursor" style=${{ x: cx, y: cy, scale: cs }} initial=${{ opacity: 0 }} animate=${{ opacity: curOn ? 1 : 0 }}><${Cursor} /><//>
+        <${AnimatePresence}>
+          ${fx.note && html`<${motion.div} key=${fx.note.text} className="note" style=${{ left: fx.note.x, top: fx.note.y }}
+              initial=${{ opacity: 0, y: 10, scale: .9 }} animate=${{ opacity: 1, y: 0, scale: 1 }} exit=${{ opacity: 0, scale: .95 }} transition=${spring}>${fx.note.text}<//>`}
+        <//>
+      </div>
+    <//>`;
+}
+
+function BeforeAfter({ sc, step }) {
+  const p = useMotionValue(100);
+  useEffect(() => { if (step >= 1) animate(p, 0, { duration: 1.5, ease: [.65, 0, .35, 1] }); }, [step]);
+  const clip = useTransform(p, v => `inset(0 0 0 ${v}%)`);
+  const left = useTransform(p, v => v + '%');
+  const pane = side => side.html != null
+    ? html`<${Shadow} markup=${side.html} css=${sc.css} bg=${side.bg || sc.bg} />`
+    : html`<div className="ba-list">${(side.items || []).map((it, i) => html`<div key=${i}><b>${side === sc.after ? '✓' : '✕'}</b><span>${rich(it)}</span></div>`)}</div>`;
+  return html`<${Head} sc=${sc} />
+    <${motion.div} className="ba" style=${{ height: `min(${+(sc.height || 400)}px, var(--fit))` }}
+        initial=${{ opacity: 0, y: 50, scale: .94 }} animate=${{ opacity: 1, y: 0, scale: 1 }} transition=${soft}>
+      <div className="ba-pane">${pane(sc.before || {})}<${motion.span} className="ba-lab l" animate=${{ opacity: step >= 1 ? 0 : 1 }} transition=${{ delay: step >= 1 ? 1.1 : 0 }}>${sc.before?.label || 'Before'}<//></div>
+      <${motion.div} className="ba-pane after" style=${{ clipPath: clip }}>${pane(sc.after || {})}<span className="ba-lab r">${sc.after?.label || 'After'}</span><//>
+      <${motion.div} className="ba-div" style=${{ left, opacity: step >= 1 ? 1 : 0 }} />
+    <//>`;
+}
+
+function Highlights({ sc, step }) {
+  return html`<${Head} sc=${sc} />
+    <div className="cards">${(sc.items || []).map((it, i) => i < step && html`<${motion.div} key=${i} className="card"
+        initial=${{ opacity: 0, y: 70, rotate: i % 2 ? 7 : -7, scale: .85 }} animate=${{ opacity: 1, y: 0, rotate: 0, scale: 1 }} transition=${{ type: 'spring', stiffness: 140, damping: 16 }}>
+      ${it.icon && html`<div className="ic">${it.icon}</div>`}<h3>${rich(it.title)}</h3>${it.body && html`<p>${it.body}</p>`}
+    <//>`)}</div>`;
+}
+
+function Journey({ sc, step }) {
+  const nodes = sc.nodes || [];
+  const p = nodes.length > 1 ? Math.max(0, step - 1) / (nodes.length - 1) : 1;
+  const vertical = matchMedia('(max-width:640px)').matches;
+  return html`<${Head} sc=${sc} />
+    <div className="jr">
+      <div className="jr-track"><${motion.div} className="jr-fill" initial=${vertical ? { scaleY: 0 } : { scaleX: 0 }} animate=${vertical ? { scaleY: p } : { scaleX: p }} transition=${soft} /></div>
+      ${nodes.map((n, i) => html`<${motion.div} key=${i} className=${'jn' + (i < step ? ' on' : '')}
+          initial=${{ opacity: .25, y: 10 }} animate=${{ opacity: i < step ? 1 : .25, y: i < step ? 0 : 10 }} transition=${spring}>
+        <${motion.div} className="dot" animate=${i === step - 1 ? { scale: [1, 1.18, 1] } : { scale: 1 }} transition=${{ duration: .5 }}>${n.icon || i + 1}<//>
+        <div><div className="lb">${rich(n.label)}</div>${n.sub && html`<div className="sb">${n.sub}</div>`}</div>
+      <//>`)}
+    </div>`;
+}
+
+function NumberScene({ sc, step }) {
+  const to = parseFloat(sc.to), from = sc.from != null ? parseFloat(sc.from) : 0;
+  const dec = (String(sc.to).split('.')[1] || '').length;
+  const mv = useMotionValue(sc.from != null ? from : 0);
+  const txt = useTransform(mv, v => (sc.prefix || '') + v.toFixed(dec) + (sc.suffix || ''));
+  const morph = sc.from == null || step >= 1;
+  useEffect(() => { if (morph) animate(mv, to, { duration: 1.3, ease: [.2, .8, .2, 1] }); }, [morph]);
+  return html`<${Head} sc=${sc} />
+    <div className="num">
+      <${motion.div} className="big acc" initial=${{ opacity: 0, scale: .6 }} animate=${{ opacity: 1, scale: morph ? [1.12, 1] : 1 }} transition=${spring}>${txt}<//>
+      ${sc.label && html`<${motion.div} className="lab" initial=${{ opacity: 0, y: 10 }} animate=${{ opacity: 1, y: 0 }} transition=${{ ...spring, delay: .3 }}>${rich(sc.label)}<//>`}
+      ${sc.from != null && morph && html`<${motion.div} className="was" initial=${{ opacity: 0 }} animate=${{ opacity: 1 }} transition=${{ delay: 1.2 }}>was ${(sc.prefix || '') + sc.from + (sc.suffix || '')}<//>`}
+    </div>`;
+}
+
+function Terminal({ sc, step }) {
+  const steps = sc.steps || [];
+  return html`<${Head} sc=${sc} />
+    <${motion.div} className="term" initial=${{ opacity: 0, y: 60, rotateX: 18 }} animate=${{ opacity: 1, y: 0, rotateX: 0 }} transition=${soft}>
+      <div className="dev-bar"><span className="dots"><i></i><i></i><i></i></span><span className="url">${sc.shell || 'terminal'}</span></div>
+      <div className="term-b">${steps.map((st, i) => i < step && html`<${TermStep} key=${i} st=${st} prompt=${sc.prompt || '$'} />`)}</div>
+    <//>`;
+}
+function TermStep({ st, prompt }) {
+  const [n, setN] = useState(0);
+  const cmd = st.cmd || '';
+  useEffect(() => { if (n < cmd.length) { const t = setTimeout(() => setN(n + 1), 34); return () => clearTimeout(t); } }, [n]);
+  const typed = n >= cmd.length;
+  return html`<div><span className="pr">${prompt}</span> ${cmd.slice(0, n)}${!typed && html`<span className="caret"></span>`}</div>
+    ${typed && (st.out || []).map((o, i) => { const O = typeof o === 'string' ? { t: o } : o; return html`<${motion.div} key=${i} className=${O.k || ''}
+      initial=${{ opacity: 0, x: -8 }} animate=${{ opacity: 1, x: 0 }} transition=${{ delay: .25 + i * .18, duration: .25 }}>${O.t}<//>`; })}`;
+}
+
+function End({ sc }) {
+  const title = plain(sc.title || 'Shipped.');
+  const sparks = useRef([...Array(22)].map((_, i) => { const a = i / 22 * Math.PI * 2 + Math.random() * .3, r = 140 + Math.random() * 220; return { x: Math.cos(a) * r, y: Math.sin(a) * r * .6, d: Math.random() * .2 }; })).current;
+  return html`<div className="end">
+    ${sparks.map((p, i) => html`<${motion.i} key=${i} className="spark" initial=${{ x: 0, y: 0, opacity: 0, scale: .4 }}
+      animate=${{ x: p.x, y: p.y, opacity: [0, 1, 0], scale: [.4, 1.2, .6] }} transition=${{ duration: 1.6, delay: .35 + p.d, ease: [.1, .8, .3, 1] }} />`)}
+    ${sc.kicker && html`<${motion.div} className="kicker" initial=${{ opacity: 0 }} animate=${{ opacity: 1 }}>${sc.kicker}<//>`}
+    <div className="t acc">${[...title].map((ch, i) => html`<${motion.span} key=${i}
+      initial=${{ opacity: 0, y: 40, rotateX: -80 }} animate=${{ opacity: 1, y: 0, rotateX: 0 }} transition=${{ ...spring, delay: .03 * i }}>${ch}<//>`)}</div>
+    ${sc.tagline && html`<${motion.div} className="tag" initial=${{ opacity: 0, y: 12 }} animate=${{ opacity: 1, y: 0 }} transition=${{ ...spring, delay: .6 }}>${rich(sc.tagline)}<//>`}
+    ${sc.cta && html`<${motion.div} className="cta" initial=${{ opacity: 0, scale: .8 }} animate=${{ opacity: 1, scale: 1 }} transition=${{ ...spring, delay: .9 }}>${sc.cta}<//>`}
+  </div>`;
+}
+
+const SCENES = { hook: Hook, text: Text, screen: Screen, beforeafter: BeforeAfter, highlights: Highlights, journey: Journey, number: NumberScene, terminal: Terminal, end: End };
+
+/* ---------- captions (+ optional speech) ---------- */
+async function runCaption(text, gen, setCap, voice) {
+  const words = plain(text).split(/\s+/).filter(Boolean);
+  if (!words.length) return;
+  if (voice && 'speechSynthesis' in window) {
+    await new Promise(res => {
+      try {
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(words.join(' '));
+        u.lang = DEMO.lang || 'en-US'; u.rate = Math.min(2, 1.02 * clock.speed);
+        const starts = []; let c = 0; words.forEach(w => { starts.push(c); c += w.length + 1; });
+        u.onboundary = e => { if (gen === clock.gen) setCap(starts.filter(s => s <= e.charIndex).length); };
+        u.onend = u.onerror = () => { setCap(words.length); res(); };
+        speechSynthesis.speak(u);
+      } catch { res(); }
+    });
+    return;
+  }
+  for (let i = 0; i < words.length; i++) { setCap(i + 1); await wait(Math.max(170, 70 + words[i].length * 40), gen); }
+}
+
+/* ---------- player ---------- */
+const ICON = {
+  play: html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>`,
+  pause: html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>`,
+  prev: html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>`,
+  next: html`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>`,
+  voice: html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>`,
+  full: html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>`,
+  replay: html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>`,
+};
+
+function App() {
+  const [idx, setIdx] = useState(0);
+  const [run, setRun] = useState(0);
+  const [step, setStep] = useState(0);
+  const [cap, setCap] = useState(0);
+  const [paused, setPausedS] = useState(false);
+  const [done, setDone] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  const [voice, setVoice] = useState(false);
+  const voiceRef = useRef(false); voiceRef.current = voice;
+  const bars = useRef([]);
+  const sc = scenes[idx];
+
+  const setPaused = p => { clock.paused = p; setPausedS(p); try { p ? speechSynthesis.pause() : speechSynthesis.resume(); } catch {} };
+  const go = i => { i = Math.max(0, Math.min(scenes.length - 1, i)); setPaused(false); setDone(false); i === idx ? setRun(r => r + 1) : setIdx(i); };
+
+  useEffect(() => {
+    const gen = ++clock.gen; clock.t = 0;
+    try { speechSynthesis.cancel(); } catch {}
+    setStep(0); setCap(0);
+    const plan = (PLAN[sc.type] || PLAN.text)(sc);
+    const capMs = plain(sc.say).split(/\s+/).reduce((a, w) => a + Math.max(170, 70 + w.length * 40), 0);
+    clock.est = Math.max(plan.reduce((a, b) => a + b, 0), capMs) + (sc.hold ?? 1300);
+    (async () => {
+      try {
+        const steps = (async () => { for (let k = 0; k < plan.length; k++) { setStep(k); await wait(plan[k], gen, true); } })();
+        await Promise.all([steps, runCaption(sc.say, gen, setCap, voiceRef.current)]);
+        await wait(sc.hold ?? 1300, gen, true);
+        if (idx + 1 < scenes.length) setIdx(idx + 1); else { setDone(true); setPaused(true); }
+      } catch (e) { if (e !== ABORT) console.error(e); }
+    })();
+  }, [idx, run]);
+
+  useEffect(() => {
+    let raf;
+    const tick = () => { bars.current.forEach((b, k) => { if (b) b.style.width = k < idx ? '100%' : k > idx ? '0' : (done ? 100 : Math.min(98, clock.t / clock.est * 100)) + '%'; }); raf = requestAnimationFrame(tick); };
+    tick(); return () => cancelAnimationFrame(raf);
+  }, [idx, done]);
+
+  useEffect(() => {
+    const onKey = e => {
+      if (e.key === ' ' || e.key === 'k') { e.preventDefault(); done ? go(0) : setPaused(!clock.paused); }
+      else if (e.key === 'ArrowRight' || e.key === 'l') go(idx + 1);
+      else if (e.key === 'ArrowLeft' || e.key === 'j') go(idx - 1);
+    };
+    addEventListener('keydown', onKey); return () => removeEventListener('keydown', onKey);
+  });
+
+  const Comp = SCENES[sc.type] || Text;
+  const words = plain(sc.say).split(/\s+/).filter(Boolean);
+  const cycle = () => { const v = [1, 1.5, 2, .75]; const n = v[(v.indexOf(speed) + 1) % v.length]; clock.speed = n; setSpeed(n); };
+  const full = () => { try { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()?.catch?.(() => {}); } catch {} };
+
+  return html`<${MotionConfig} reducedMotion="user"><div className="app">
+    <div className="bars">${scenes.map((_, k) => html`<div key=${k} className="bar" onClick=${() => go(k)}><i ref=${el => bars.current[k] = el}></i></div>`)}</div>
+    <div className="top"><span>${DEMO.product || DEMO.repo || ''}</span><span className="sp"></span><span>${DEMO.meta || ''}</span></div>
+    <div className="stage">
+      <${AnimatePresence} mode="wait">
+        <${motion.div} key=${idx + ':' + run} className="scene"
+            initial=${{ opacity: 0, scale: .97, y: 12 }} animate=${{ opacity: 1, scale: 1, y: 0 }}
+            exit=${{ opacity: 0, scale: 1.03, y: -12 }} transition=${{ duration: .42, ease: [.4, 0, .2, 1] }}>
+          <${Comp} sc=${sc} step=${step} />
+        <//>
+      <//>
+      ${done && html`<div className="ov"><button onClick=${() => go(0)}>${ICON.replay}Replay</button></div>`}
+    </div>
+    <div className="caption"><p>${words.map((w, i) => html`<span key=${idx + '-' + i} className=${'cw' + (i < cap ? ' on' : '')}>${w} </span>`)}</p></div>
+    <div className="ctrls">
+      <button aria-label="Previous scene" onClick=${() => go(idx - 1)}>${ICON.prev}</button>
+      <button aria-label=${paused ? 'Play' : 'Pause'} onClick=${() => done ? go(0) : setPaused(!paused)}>${paused ? ICON.play : ICON.pause}</button>
+      <button aria-label="Next scene" onClick=${() => go(idx + 1)}>${ICON.next}</button>
+      <span className="count">${idx + 1} / ${scenes.length}</span>
+      <button aria-label="Playback speed" onClick=${cycle}>${speed}×</button>
+      <button className="hide-sm" aria-pressed=${voice} aria-label="Read captions aloud" onClick=${() => { setVoice(!voice); voiceRef.current = !voice; if (voice) { try { speechSynthesis.cancel(); } catch {} } else go(idx); }}>${ICON.voice}Voice</button>
+      <button className="hide-sm" aria-label="Fullscreen" onClick=${full}>${ICON.full}</button>
+    </div>
+    ${DEMO.badge !== false && html`<span className="badge">made with /demo-it</span>`}
+  </div><//>`;
+}
+
+ReactDOM.createRoot(root).render(html`<${App} />`);
+})();
+</script>
+</body>
+</html>
