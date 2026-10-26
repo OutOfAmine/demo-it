@@ -1,5 +1,7 @@
 # /demo-it
 
+![demo-it turning a bug fix into a launch film](docs/demo.gif)
+
 **Turn your last commit into a launch film.** A Claude Code skill that reads what you shipped and makes a short, auto-playing Framer Motion video about the feature: kinetic typography, your real screen flying in with a camera that zooms onto each click, a before/after wipe, springy highlight cards, word-by-word captions and optional voice. You get one shareable link (a claude.ai Artifact) or a single HTML file.
 
 No FFmpeg, no API keys, no screen recording. Type `/demo-it`.
